@@ -8,11 +8,13 @@ class ConvUp(nn.Module):
         super(ConvUp, self).__init__()
 
         body = [
-            nn.Conv2d(in_channels=ch_in, out_channels=64, kernel_size=3, padding=3 // 2), nn.ReLU(),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=3 // 2), nn.ReLU(),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=3 // 2), nn.ReLU(),
+            nn.Conv2d(ch_in, 64, kernel_size=3, padding=3 // 2),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, padding=3 // 2),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, padding=3 // 2),
+            nn.ReLU(),
         ]
-        self.body = nn.Sequential(*body)
 
         if up_factor == 2:
             modules_tail = [
@@ -32,6 +34,7 @@ class ConvUp(nn.Module):
                 nn.Conv2d(64, ch_in, 3, padding=3 // 2, bias=True)
             ]
 
+        self.body = nn.Sequential(*body)
         self.tail = nn.Sequential(*modules_tail)
 
     def forward(self, input):
@@ -43,30 +46,37 @@ class ConvUp(nn.Module):
 
 class ConvDown(nn.Module):
 
-    def __init__(self, c_in, up_factor):
+    def __init__(self, ch_in, up_factor):
 
         super(ConvDown, self).__init__()
 
         body = [
-            nn.Conv2d(in_channels=c_in, out_channels=64, kernel_size=3, padding=3 // 2), nn.ReLU(),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=3 // 2), nn.ReLU(),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=3 // 2), nn.ReLU(),
+            nn.Conv2d(ch_in, 64, kernel_size=3, padding=3 // 2),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, padding=3 // 2),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, padding=3 // 2),
+            nn.ReLU(),
         ]
-        self.body = nn.Sequential(*body)
-        conv = common.default_conv
+
         if up_factor == 4:
             modules_tail = [
-                nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1, stride=2),
-                nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1, stride=2),
-                conv(64, c_in, 3)]
+                nn.Conv2d(64, 64, kernel_size=3, padding=1, stride=2),
+                nn.Conv2d(64, 64, kernel_size=3, padding=1, stride=2),
+                nn.Conv2d(64, ch_in, kernel_size=3, padding=3 // 2, bias=True)
+            ]
         elif up_factor == 3:
             modules_tail = [
-                nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1, stride=up_factor),
-                conv(64, c_in, 3)]
+                nn.Conv2d(64, 64, kernel_size=3, padding=1, stride=up_factor),
+                nn.Conv2d(64, ch_in, kernel_size=3, padding=3 // 2, bias=True)
+            ]
         elif up_factor == 2:
             modules_tail = [
-                nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1, stride=up_factor),
-                conv(64, c_in, 3)]
+                nn.Conv2d(64, 64, kernel_size=3, padding=1, stride=up_factor),
+                nn.Conv2d(64, ch_in, kernel_size=3, padding=3 // 2, bias=True)
+            ]
+
+        self.body = nn.Sequential(*body)
         self.tail = nn.Sequential(*modules_tail)
 
     def forward(self, input):
