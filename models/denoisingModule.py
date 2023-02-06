@@ -2,10 +2,6 @@ import torch
 import torch.nn as nn
 
 
-def default_conv(in_channels, out_channels, kernel_size, bias=True):
-    return nn.Conv2d(in_channels, out_channels, kernel_size, padding=(kernel_size // 2), bias=bias)
-
-
 class ResBlock(nn.Module):
     def __init__(self, n_feat, kernel_size, bias=True, bn=False, act=nn.ReLU(True), res_scale=1):
         super(ResBlock, self).__init__()
@@ -27,9 +23,9 @@ class ResBlock(nn.Module):
         return res
 
 
-class Encoding_Block(nn.Module):
+class EncodingBlock(nn.Module):
     def __init__(self, ch_in):
-        super(Encoding_Block, self).__init__()
+        super(EncodingBlock, self).__init__()
 
         body = [
             nn.Conv2d(ch_in, 64, kernel_size=3, padding=3 // 2),
@@ -48,9 +44,9 @@ class Encoding_Block(nn.Module):
         return f_e, down
 
 
-class Encoding_Block_End(nn.Module):
+class EncodingBlockEnd(nn.Module):
     def __init__(self, ch_in):
-        super(Encoding_Block_End, self).__init__()
+        super(EncodingBlockEnd, self).__init__()
 
         head = [
             nn.Conv2d(in_channels=ch_in, out_channels=64, kernel_size=3, padding=3 // 2),
@@ -95,9 +91,9 @@ class Encoding_Block_End(nn.Module):
         return f_e
 
 
-class Decoding_Block(nn.Module):
+class DecodingBlock(nn.Module):
     def __init__(self, ch_in):
-        super(Decoding_Block, self).__init__()
+        super(DecodingBlock, self).__init__()
 
         body = [
             nn.Conv2d(in_channels=ch_in, out_channels=64, kernel_size=3, padding=3 // 2),
@@ -120,9 +116,9 @@ class Decoding_Block(nn.Module):
         return out
 
 
-class Decoding_Block_End(nn.Module):
+class DecodingBlockEnd(nn.Module):
     def __init__(self, ch_in):
-        super(Decoding_Block_End, self).__init__()
+        super(DecodingBlockEnd, self).__init__()
 
         body = [
             nn.Conv2d(ch_in, 64, kernel_size=3, padding=3 // 2),
