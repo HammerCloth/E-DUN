@@ -2,12 +2,13 @@ import torch
 import torch.nn as nn
 
 from models.denoisingModule import EncodingBlock, EncodingBlockEnd, DecodingBlock, DecodingBlockEnd
+from models.edgeExtractionModule import CandyNet
 from models.textureReconstructionModule import ConvDown, ConvUp
 
 
-class MoG_DUN(nn.Module):
+class E_DUN(nn.Module):
     def __init__(self, args):
-        super(MoG_DUN, self).__init__()
+        super(E_DUN, self).__init__()
 
         self.channel0 = args.n_colors
         self.up_factor = args.scale[0]
@@ -35,50 +36,46 @@ class MoG_DUN(nn.Module):
         G0 = 64
         kSize = 3
         T = 4
-        self.Fe_e = nn.ModuleList([nn.Sequential(*[
-            nn.Conv2d(3, G0, kSize, padding=(kSize - 1) // 2, stride=1),
-            nn.Conv2d(G0, G0, kSize, padding=(kSize - 1) // 2, stride=1)
-        ]) for _ in range(T)])
+        self.Fe_e = nn.ModuleList(
+            [nn.Sequential(*[
+                nn.Conv2d(3, G0, kSize, padding=(kSize - 1) // 2, stride=1),
+                nn.Conv2d(G0, G0, kSize, padding=(kSize - 1) // 2, stride=1)
+            ]) for _ in range(T)])
 
-        self.RNNF = nn.ModuleList([nn.Sequential(*[
-            nn.Conv2d((i + 2) * G0, G0, 1, padding=0, stride=1),
-            nn.Conv2d(G0, G0, kSize, padding=(kSize - 1) // 2, stride=1),
-            self.act,
-            nn.Conv2d(64, 3, 3, padding=1)
-
-        ]) for i in range(T)])
+        self.RNNF = nn.ModuleList(
+            [nn.Sequential(*[
+                nn.Conv2d((i + 2) * G0, G0, 1, padding=0, stride=1),
+                nn.Conv2d(G0, G0, kSize, padding=(kSize - 1) // 2, stride=1),
+                self.act,
+                nn.Conv2d(64, 3, 3, padding=1)
+            ]) for i in range(T)])
 
         self.Fe_f = nn.ModuleList(
-            [nn.Sequential(*[nn.Conv2d((2 * i + 3) * G0, G0, 1, padding=0, stride=1)]) for i in range(T - 1)])
+            [nn.Sequential(*[
+                nn.Conv2d((2 * i + 3) * G0, G0, 1, padding=0, stride=1)
+            ]) for i in range(T - 1)])
 
-        self.u = nn.ParameterList(
-            [nn.Parameter(torch.tensor(0.5)) for _ in range(T)])
-        self.eta = nn.ParameterList(
-            [nn.Parameter(torch.tensor(0.5)) for _ in range(T)])
-        self.gama = nn.ParameterList(
-            [nn.Parameter(torch.tensor(0.5)) for _ in range(T)])
-        self.delta = nn.ParameterList(
-            [nn.Parameter(torch.tensor(0.1)) for _ in range(T)])
-        self.gama1 = nn.ParameterList(
-            [nn.Parameter(torch.tensor(0.5)) for _ in range(T)])
-        self.delta1 = nn.ParameterList(
-            [nn.Parameter(torch.tensor(0.1)) for _ in range(T)])
-        self.u1 = nn.ParameterList(
-            [nn.Parameter(torch.tensor(0.5)) for _ in range(T)])
+        self.eta = nn.ParameterList([nn.Parameter(torch.tensor(0.5)) for _ in range(T)])
+        self.delta = nn.ParameterList([nn.Parameter(torch.tensor(0.1)) for _ in range(T)])
 
         self.conv_up = ConvUp(3, self.up_factor)
         self.conv_down = ConvDown(3, self.up_factor)
 
-        self.NLBlock = nn.ModuleList([blockNL.blockNL(3, 15) for _ in range(4)])
+        self.candy = CandyNet(3).eval()  # candy算子不需要迭代内部系数
 
     def forward(self, y):  # [batch_size ,3 ,7 ,270 ,480] ;
-        Ay = torch.nn.functional.interpolate(y, scale_factor=self.up_factor, mode='bilinear', align_corners=False)
-        x = Ay
         fea_list = []
         V_list = []
         outs = []
+
+        x_texture = torch.nn.functional.interpolate(
+            y, scale_factor=self.up_factor, mode='bilinear', align_corners=False)
+        x_edge = self.candy(x_texture)
+        x = x_edge + x_texture  # 这里可以增加一些倍数，直接相加可能会存在问题
+
         for i in range(len(self.Fe_e)):
-            fea = self.Fe_e[i](x)
+            # --------------------denoising module------------------------
+            fea = self.Fe_e[i](x_texture)
             fea_list.append(fea)
             if i != 0:
                 fea = self.Fe_f[i - 1](torch.cat(fea_list, 1))
@@ -100,16 +97,15 @@ class MoG_DUN(nn.Module):
                 decode0 = self.construction(self.act(decode0))
             else:
                 decode0 = self.RNNF[i - 1](torch.cat(V_list, 1))
-            conv_out = x + decode0
+            v = x_texture + decode0
 
-            NL = self.NLBlock[i](x)
-            e = NL - x
-            e = e - self.delta1[i] * (
-                    self.u1[i] * self.conv_up(self.conv_down(x + e) - y) - self.gama1[i] * (x + e - NL))
+            # --------------------texture module--------------------------
+            x_texture = x_texture - self.delta[i] * (
+                    self.conv_up(self.conv_down(x) - y) + self.eta[i] * (x - v))
 
-            x = x - self.delta[i] * (
-                    self.conv_up(self.conv_down(x) - y + self.u[i] * self.conv_down(x + e) - y) + self.eta[i] * (
-                    x - conv_out) + self.gama[i] * (x + e - NL))
+            # -----------------------edge module--------------------------
+            x_edge = self.candy(x)
+            x = x_edge + x_texture  # 这里可以增加一些倍数，直接相加可能会存在问题
 
             outs.append(x)
 

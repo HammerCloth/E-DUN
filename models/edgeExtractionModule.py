@@ -160,7 +160,7 @@ class CandyNet(nn.Module):
 
         assert grad_mag.size() == grad_orientation.size() == thin_edges.size() == thresholded.size() == early_threshold.size()
 
-        return blurred_img, grad_mag, grad_orientation, thin_edges, thresholded, early_threshold
+        return thresholded
 
 
 if __name__ == '__main__':
