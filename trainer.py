@@ -1,22 +1,22 @@
 import os
-import math
 from decimal import Decimal
-import time
-import utility
-import random
+
 import torch
-from torch.autograd import Variable
 from tqdm import tqdm
+
+import utility
 
 
 class Trainer():
     def __init__(self, args, loader, my_model, my_loss, ckp):
         self.args = args
-        self.scale = args.scale
+        self.scale = args.scale  # 缩放尺度
 
-        self.ckp = ckp # ？
+        self.ckp = ckp  # ？
+
         self.loader_train = loader.loader_train
         self.loader_test = loader.loader_test
+
         self.model = my_model
         self.loss = my_loss
         self.optimizer = utility.make_optimizer(args, self.model)
@@ -24,9 +24,12 @@ class Trainer():
 
         if self.args.load != '.':
             self.optimizer.load_state_dict(
-                torch.load(os.path.join(ckp.dir, 'optimizer.pt'))
+                torch.load(
+                    os.path.join(ckp.dir, 'optimizer.pt')
+                )
             )
-            for _ in range(len(ckp.log)): self.scheduler.step()
+            for _ in range(len(ckp.log)):
+                self.scheduler.step()
 
         self.error_last = 1e8
 
@@ -144,4 +147,3 @@ class Trainer():
         else:
             epoch = self.scheduler.last_epoch + 1
             return epoch >= self.args.epochs
-

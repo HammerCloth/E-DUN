@@ -171,7 +171,10 @@ def calc_psnr(sr, hr, scale, rgb_range, benchmark=False):
 
 
 def make_optimizer(args, my_model):
-    trainable = filter(lambda x: x.requires_grad, my_model.parameters())
+    # 从model中的参数中，过滤可以进行训练的参数
+    trainable = filter(
+        lambda x: x.requires_grad, my_model.parameters()
+    )
 
     if args.optimizer == 'SGD':
         optimizer_function = optim.SGD
