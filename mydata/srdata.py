@@ -100,19 +100,21 @@ class SRData(data.Dataset):
         raise NotImplementedError
 
     def __getitem__(self, idx):
-        lr, hr, filename = self._load_file(idx)
+        lr, hr, filename = self._load_file(idx)  # 获取对应下标的数据集
         lr, hr = self._get_patch(lr, hr)
         lr, hr = common.set_channel([lr, hr], self.args.n_colors)
         lr_tensor, hr_tensor = common.np2Tensor([lr, hr], self.args.rgb_range)
         return lr_tensor, hr_tensor, filename
 
     def __len__(self):
+        """返回数据集的数量"""
         return len(self.images_hr)
 
     def _get_index(self, idx):
         return idx
 
     def _load_file(self, idx):
+        """加载对应下标的数据"""
         idx = self._get_index(idx)
         lr = self.images_lr[self.idx_scale][idx]
         hr = self.images_hr[idx]
@@ -136,14 +138,14 @@ class SRData(data.Dataset):
         scale = self.scale[self.idx_scale]
         multi_scale = len(self.scale) > 1
         if self.train:
-            lr, hr = common.get_patch(
+            lr, hr = common.get_patch(  # 裁剪
                 lr, hr, patch_size, scale, multi_scale=multi_scale
             )
-            lr, hr = common.augment([lr, hr])
-            lr = common.add_noise(lr, self.args.noise)
+            lr, hr = common.augment([lr, hr])  # 图片增墒
+            lr = common.add_noise(lr, self.args.noise)  # 增加噪音
         else:
             ih, iw = lr.shape[0:2]
-            hr = hr[0:ih * scale, 0:iw * scale]
+            hr = hr[0:ih * scale, 0:iw * scale]  # 简单裁切
 
         return lr, hr
 

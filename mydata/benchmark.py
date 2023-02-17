@@ -1,12 +1,7 @@
 import os
 
-from data import common
-from data import srdata
+from mydata import srdata
 
-
-
-import torch
-import torch.utils.data as data
 
 class Benchmark(srdata.SRData):
     def __init__(self, args, train=True):
@@ -17,7 +12,7 @@ class Benchmark(srdata.SRData):
         list_lr = [[] for _ in self.scale]
         for entry in os.scandir(os.path.join(self.dir_hr, 'X{}'.format(self.scale[0]))):
             filename = os.path.splitext(entry.name)[0]
-            list_hr.append(os.path.join(self.dir_hr,'X{}'.format(self.scale[0]), filename + self.ext))
+            list_hr.append(os.path.join(self.dir_hr, 'X{}'.format(self.scale[0]), filename + self.ext))
             for si, s in enumerate(self.scale):
                 list_lr[si].append(os.path.join(
                     self.dir_lr,

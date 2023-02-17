@@ -6,7 +6,7 @@ import torch
 
 
 def get_patch(img_in, img_tar, patch_size, scale, multi_scale=False):
-    ih, iw = img_in.shape[:2]
+    ih, iw = img_in.shape[:2]  # 长和宽
 
     p = scale if multi_scale else 1
     tp = p * patch_size
@@ -50,6 +50,7 @@ def np2Tensor(l, rgb_range):
 
 
 def add_noise(x, noise='.'):
+    """增加噪音"""
     if noise is not '.':
         noise_type = noise[0]
         noise_value = int(noise[1:])
@@ -59,7 +60,6 @@ def add_noise(x, noise='.'):
         elif noise_type == 'S':
             noises = np.random.poisson(x * noise_value) / noise_value
             noises = noises - noises.mean(axis=0).mean(axis=0)
-
         x_noise = x.astype(np.int16) + noises.astype(np.int16)
         x_noise = x_noise.clip(0, 255).astype(np.uint8)
         return x_noise
@@ -68,6 +68,7 @@ def add_noise(x, noise='.'):
 
 
 def augment(l, hflip=True, rot=True):
+    """图片增墒"""
     hflip = hflip and random.random() < 0.5
     vflip = rot and random.random() < 0.5
     rot90 = rot and random.random() < 0.5

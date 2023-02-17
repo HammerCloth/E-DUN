@@ -1,3 +1,6 @@
+"""
+https://www.cnblogs.com/rossiXYZ/p/15150504.html
+"""
 import sys
 import threading
 
@@ -10,14 +13,14 @@ import random
 import torch
 import torch.multiprocessing as multiprocessing
 
-from torch._C import _set_worker_signal_handlers, _update_worker_pids
+from torch._C import _set_worker_signal_handlers, _set_worker_pids
 from torch.utils.data.dataloader import DataLoader
 from torch.utils.data.dataloader import _MultiProcessingDataLoaderIter
 
 from torch.utils.data.dataloader import ExceptionWrapper
-from torch.utils.data.dataloader import _pin_memory_loop
+from torch.utils.data._utils.pin_memory import _pin_memory_loop
 from torch.utils.data.dataloader import default_collate
-from torch.utils.data.dataloader import _set_SIGCHLD_handler
+from torch.utils.data._utils.signal_handling import _set_SIGCHLD_handler
 
 if sys.version_info[0] == 2:
     import Queue as queue
@@ -117,7 +120,7 @@ class _MSDataLoaderIter(_MultiProcessingDataLoaderIter):
                 w.daemon = True  # ensure that the worker exits on process exit
                 w.start()
 
-            _update_worker_pids(id(self), tuple(w.pid for w in self.workers))
+            _set_worker_pids(id(self), tuple(w.pid for w in self.workers))
             _set_SIGCHLD_handler()
             self.worker_pids_set = True
 
