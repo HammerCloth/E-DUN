@@ -3,7 +3,7 @@ import os
 import scipy.misc as misc
 import torch.utils.data as data
 
-import common
+import mydata.common as common
 
 
 class Demo(data.Dataset):

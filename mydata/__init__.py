@@ -2,7 +2,7 @@ from importlib import import_module
 
 from torch.utils.data.dataloader import default_collate
 
-from dataLoader import MSDataLoader
+from mydata.myDataLoader import MSDataLoader
 
 
 class Data:
@@ -24,7 +24,7 @@ class Data:
         # if not test only
         if not args.test_only:
             # 动态导入对应的dataset模块
-            module_train = import_module('data.' + args.data_train.lower())
+            module_train = import_module('mydata.' + args.data_train.lower())
             # 生成trainset
             trainset = getattr(module_train, args.data_train)(args)
             # load trainset
@@ -39,16 +39,16 @@ class Data:
         '''导入testSet，并构造testLoader并返回'''
         if args.data_test in ['Set5', 'Set14', 'BSD100', 'Urban100', 'Manga109']:
             if not args.benchmark_noise:
-                module_test = import_module('data.benchmark')
+                module_test = import_module('mydata.benchmark')
                 testset = getattr(module_test, 'Benchmark')(args, train=False)
             else:
-                module_test = import_module('data.benchmark_noise')
+                module_test = import_module('mydata.benchmark_noise')
                 testset = getattr(module_test, 'BenchmarkNoise')(
                     args,
                     train=False
                 )
         else:
-            module_test = import_module('data.' + args.data_test.lower())
+            module_test = import_module('mydata.' + args.data_test.lower())
             testset = getattr(module_test, args.data_test)(args, train=False)
         self.loader_test = MSDataLoader(
             args,

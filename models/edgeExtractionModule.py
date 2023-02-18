@@ -1,5 +1,6 @@
 import numpy as np
 import scipy
+from scipy import signal as signal
 import torch
 import torch.nn as nn
 
@@ -12,7 +13,7 @@ class CandyNet(nn.Module):
         self.use_cuda = use_cuda
 
         filter_size = 5
-        generated_filters = scipy.signal.gaussian(filter_size, std=1.0).reshape([1, filter_size])
+        generated_filters = signal.gaussian(filter_size, std=1.0).reshape([1, filter_size])
 
         self.gaussian_filter_horizontal = nn.Conv2d(1, 1, kernel_size=(1, filter_size), padding=(0, filter_size // 2))
         self.gaussian_filter_horizontal.weight.data.copy_(torch.from_numpy(generated_filters))

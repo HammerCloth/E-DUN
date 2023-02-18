@@ -1,6 +1,6 @@
 import os
 
-import srdata
+import mydata.srdata as srdata
 
 
 class DIV2K(srdata.SRData):

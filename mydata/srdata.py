@@ -4,7 +4,7 @@ import imageio
 import numpy as np
 import torch.utils.data as data
 
-import common
+import mydata.common as common
 
 
 class SRData(data.Dataset):

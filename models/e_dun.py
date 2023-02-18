@@ -6,6 +6,10 @@ from models.edgeExtractionModule import CandyNet
 from models.textureReconstructionModule import ConvDown, ConvUp
 
 
+def make_model(args, parent=False):
+    return E_DUN(args)
+
+
 class E_DUN(nn.Module):
     def __init__(self, args):
         super(E_DUN, self).__init__()

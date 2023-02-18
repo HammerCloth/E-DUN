@@ -7,12 +7,12 @@ from tqdm import tqdm
 import utility
 
 
-class Trainer():
+class Trainer:
     def __init__(self, args, loader, my_model, my_loss, ckp):
         self.args = args
         self.scale = args.scale  # 缩放尺度
 
-        self.ckp = ckp  # ？
+        self.ckp = ckp  # checkpoint
 
         self.loader_train = loader.loader_train
         self.loader_test = loader.loader_test
@@ -93,14 +93,18 @@ class Trainer():
         self.model.train()
 
         timer_data, timer_model = utility.timer(), utility.timer()
+
         for batch, (lr, hr, _, idx_scale) in enumerate(self.loader_train):
+
             lr, hr = self.prepare([lr, hr])
+
             timer_data.hold()
             timer_model.tic()
 
             self.optimizer.zero_grad()
             sr = self.model(lr, idx_scale)
 
+            # 计算loss
             if isinstance(sr, list):
                 loss = 0
                 for sr_ in sr:
@@ -108,6 +112,7 @@ class Trainer():
                 loss = loss / len(sr)
             else:
                 loss = self.loss(sr, hr)
+
             if loss.item() < self.args.skip_threshold * self.error_last:
                 loss.backward()
                 self.optimizer.step()
@@ -131,11 +136,12 @@ class Trainer():
         self.loss.end_log(len(self.loader_train))
         self.error_last = self.loss.log[-1, -1]
 
-    def prepare(self, l, volatile=False):
+    def prepare(self, l):
         device = torch.device('cpu' if self.args.cpu else 'cuda')
 
         def _prepare(tensor):
-            if self.args.precision == 'half': tensor = tensor.half()
+            if self.args.precision == 'half':
+                tensor = tensor.half()
             return tensor.to(device)
 
         return [_prepare(_l) for _l in l]
