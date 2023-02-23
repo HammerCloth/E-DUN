@@ -14,8 +14,8 @@ class E_DUN(nn.Module):
     def __init__(self, args):
         super(E_DUN, self).__init__()
 
-        self.channel0 = args.n_colors
-        self.up_factor = args.scale[0]
+        self.channel0 = args.n_colors  # channel的数量
+        self.up_factor = args.scale[0]  # 放大倍数
         self.patch_size = args.patch_size
         self.batch_size = int(args.batch_size / args.n_GPUs)
 
@@ -41,31 +41,43 @@ class E_DUN(nn.Module):
         kSize = 3
         T = 4
         self.Fe_e = nn.ModuleList(
-            [nn.Sequential(*[
-                nn.Conv2d(3, G0, kSize, padding=(kSize - 1) // 2, stride=1),
-                nn.Conv2d(G0, G0, kSize, padding=(kSize - 1) // 2, stride=1)
-            ]) for _ in range(T)])
+            [nn.Sequential(
+                *[
+                    nn.Conv2d(3, G0, kSize, padding=(kSize - 1) // 2, stride=1),
+                    nn.Conv2d(G0, G0, kSize, padding=(kSize - 1) // 2, stride=1)
+                ]
+            ) for _ in range(T)]
+        )
 
         self.RNNF = nn.ModuleList(
-            [nn.Sequential(*[
-                nn.Conv2d((i + 2) * G0, G0, 1, padding=0, stride=1),
-                nn.Conv2d(G0, G0, kSize, padding=(kSize - 1) // 2, stride=1),
-                self.act,
-                nn.Conv2d(64, 3, 3, padding=1)
-            ]) for i in range(T)])
+            [nn.Sequential(
+                *[
+                    nn.Conv2d((i + 2) * G0, G0, 1, padding=0, stride=1),
+                    nn.Conv2d(G0, G0, kSize, padding=(kSize - 1) // 2, stride=1),
+                    self.act,
+                    nn.Conv2d(64, 3, 3, padding=1)
+                ]
+            ) for i in range(T)]
+        )
 
         self.Fe_f = nn.ModuleList(
-            [nn.Sequential(*[
-                nn.Conv2d((2 * i + 3) * G0, G0, 1, padding=0, stride=1)
-            ]) for i in range(T - 1)])
+            [nn.Sequential(
+                *[
+                    nn.Conv2d((2 * i + 3) * G0, G0, 1, padding=0, stride=1)
+                ]
+            ) for i in range(T - 1)]
+        )
 
+        # 纹理重构模块
         self.eta = nn.ParameterList([nn.Parameter(torch.tensor(0.5)) for _ in range(T)])
         self.delta = nn.ParameterList([nn.Parameter(torch.tensor(0.1)) for _ in range(T)])
-
         self.conv_up = ConvUp(3, self.up_factor)
         self.conv_down = ConvDown(3, self.up_factor)
 
-        self.candy = CandyNet(3).eval()  # candy算子不需要迭代内部系数
+        # candy算子不需要迭代内部系数
+        self.candy = CandyNet(3)
+        for para in self.candy.parameters():
+            para.requires_grad = False
 
     def forward(self, y):  # [batch_size ,3 ,7 ,270 ,480] ;
         fea_list = []

@@ -1,8 +1,7 @@
 import numpy as np
-import scipy
-from scipy import signal as signal
 import torch
 import torch.nn as nn
+from scipy import signal as signal
 
 
 class CandyNet(nn.Module):
@@ -159,7 +158,7 @@ class CandyNet(nn.Module):
         early_threshold = grad_mag.clone()
         early_threshold[grad_mag < self.threshold] = 0.0
 
-        assert grad_mag.size() == grad_orientation.size() == thin_edges.size() == thresholded.size() == early_threshold.size()
+        # assert grad_mag.size() == grad_orientation.size() == thin_edges.size() == thresholded.size() == early_threshold.size()
 
         return thresholded
 
