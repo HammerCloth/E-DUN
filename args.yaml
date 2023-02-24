@@ -1,0 +1,7 @@
+args:
+  scale: 列表，存储放大倍数
+  dir_data: dataset 中存储存放数据集的文件夹的绝对路径
+  n_train: 数据集训练部分index_end
+  offset_val: 数据集验证部分index_end = offset_val + n_val
+  n_val: 数据集验证部分index_end = offset_val + n_val
+  ext: 表示数据集图片的种类，img、sep、bin，不同的选择可以导致不同的数据获取方式
