@@ -80,18 +80,20 @@ class E_DUN(nn.Module):
             para.requires_grad = False
 
     def forward(self, y):  # [batch_size ,3 ,7 ,270 ,480] ;
+
         fea_list = []
         V_list = []
         outs = []
+        x_texture = []
 
-        x_texture = torch.nn.functional.interpolate(
-            y, scale_factor=self.up_factor, mode='bilinear', align_corners=False)
-        x_edge = self.candy(x_texture)
-        x = x_edge + x_texture  # 这里可以增加一些倍数，直接相加可能会存在问题
+        x_texture.append(torch.nn.functional.interpolate(
+            y, scale_factor=self.up_factor, mode='bilinear', align_corners=False))
+        x_edge = self.candy(x_texture[0])
+        x = (x_edge + x_texture[0])  # 这里可以增加一些倍数，直接相加可能会存在问题
 
         for i in range(len(self.Fe_e)):
             # --------------------denoising module------------------------
-            fea = self.Fe_e[i](x_texture)
+            fea = self.Fe_e[i](x_texture[i])
             fea_list.append(fea)
             if i != 0:
                 fea = self.Fe_f[i - 1](torch.cat(fea_list, 1))
@@ -113,16 +115,14 @@ class E_DUN(nn.Module):
                 decode0 = self.construction(self.act(decode0))
             else:
                 decode0 = self.RNNF[i - 1](torch.cat(V_list, 1))
-            v = x_texture + decode0
-
-            # --------------------texture module--------------------------
-            x_texture = x_texture - self.delta[i] * (
-                    self.conv_up(self.conv_down(x) - y) + self.eta[i] * (x - v))
-
-            # -----------------------edge module--------------------------
-            x_edge = self.candy(x)
-            x = x_edge + x_texture  # 这里可以增加一些倍数，直接相加可能会存在问题
-
+            v = x_texture[i] + decode0
+            # # --------------------texture module--------------------------
+            x_texture.append(x_texture[i] - self.delta[i] * (
+                    self.conv_up(self.conv_down(x) - y) + self.eta[i] * (x - v)))
+            # # -----------------------edge module--------------------------
+            x_edge = (self.candy(x))  # 这里对代码进行了置换
+            x = x_edge + x_texture[i + 1]  # 这里可以增加一些倍数，直接相加可能会存在问题
+            #
             outs.append(x)
 
         return x

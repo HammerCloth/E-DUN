@@ -41,7 +41,7 @@ def creatDataset(data_dir):
     ext = '.png'
 
     '''step-1 对source中的图像进行筛选与裁剪，存储到hr中'''
-    size = (100, 100)
+    size = (2048, 2048)
     img_dir_list = getImgList(data_dir + '/' + source_dir)
 
     hr_img_list = []
@@ -62,7 +62,7 @@ def creatDataset(data_dir):
     img_list = []
     for i in img_dir_list:
         img_list.append(imread(i))
-    # 整合为batch
+    # 整合为batch，batch的维度太多也可能导致内存不够裁切不了
     batch = torch.stack(img_list).float()
     # 进行下采样
     batch_x2 = interpolate(0.5, batch)

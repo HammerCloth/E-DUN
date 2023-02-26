@@ -82,15 +82,15 @@ class CandyNet(nn.Module):
         img_g = img[:, 1:2]  # batch,1,height, width
         img_b = img[:, 2:3]  # batch,1,height, width
 
-        blur_horizontal = self.gaussian_filter_horizontal(img_r)  # batch,1,height,width
-        blurred_img_r = self.gaussian_filter_vertical(blur_horizontal)  # batch,1,height,width
-        blur_horizontal = self.gaussian_filter_horizontal(img_g)  # batch,1,height,width
-        blurred_img_g = self.gaussian_filter_vertical(blur_horizontal)  # batch,1,height,width
-        blur_horizontal = self.gaussian_filter_horizontal(img_b)  # batch,1,height,width
-        blurred_img_b = self.gaussian_filter_vertical(blur_horizontal)  # batch,1,height,width
+        blur_horizontal_r = self.gaussian_filter_horizontal(img_r)  # batch,1,height,width
+        blurred_img_r = self.gaussian_filter_vertical(blur_horizontal_r)  # batch,1,height,width
+        blur_horizontal_g = self.gaussian_filter_horizontal(img_g)  # batch,1,height,width
+        blurred_img_g = self.gaussian_filter_vertical(blur_horizontal_g)  # batch,1,height,width
+        blur_horizontal_b = self.gaussian_filter_horizontal(img_b)  # batch,1,height,width
+        blurred_img_b = self.gaussian_filter_vertical(blur_horizontal_b)  # batch,1,height,width
 
-        blurred_img = torch.stack([blurred_img_r, blurred_img_g, blurred_img_b], dim=1)  # batch,1,height,width
-        blurred_img = torch.stack([torch.squeeze(blurred_img)])  # batch,1,height,width
+        blurred_img_ = torch.stack([blurred_img_r, blurred_img_g, blurred_img_b], dim=1)  # batch,1,height,width
+        blurred_img = torch.stack([torch.squeeze(blurred_img_)])  # batch,1,height,width
 
         grad_x_r = self.sobel_filter_horizontal(blurred_img_r)  # batch,1,height,width
         grad_y_r = self.sobel_filter_vertical(blurred_img_r)  # batch,1,height,width
@@ -100,13 +100,13 @@ class CandyNet(nn.Module):
         grad_y_b = self.sobel_filter_vertical(blurred_img_b)  # batch,1,height,width
 
         # COMPUTE THICK EDGES
-        grad_mag = torch.sqrt(grad_x_r ** 2 + grad_y_r ** 2)  # batch,1,height,width
-        grad_mag += torch.sqrt(grad_x_g ** 2 + grad_y_g ** 2)  # batch,1,height,width
-        grad_mag += torch.sqrt(grad_x_b ** 2 + grad_y_b ** 2)  # batch,1,height,width
-        grad_orientation = (  # batch,1,height,width
+        grad_mag_1 = torch.sqrt(grad_x_r ** 2 + grad_y_r ** 2)  # batch,1,height,width
+        grad_mag_2 = grad_mag_1 + torch.sqrt(grad_x_g ** 2 + grad_y_g ** 2)  # batch,1,height,width
+        grad_mag = grad_mag_2 + torch.sqrt(grad_x_b ** 2 + grad_y_b ** 2)  # batch,1,height,width
+        grad_orientation_1 = (  # batch,1,height,width
                 torch.atan2(grad_y_r + grad_y_g + grad_y_b, grad_x_r + grad_x_g + grad_x_b) * (180.0 / 3.14159))
-        grad_orientation += 180.0  # batch,1,height,width
-        grad_orientation = torch.round(grad_orientation / 45.0) * 45.0  # batch,1,height,width
+        grad_orientation_2 = grad_orientation_1 + 180.0  # batch,1,height,width
+        grad_orientation = torch.round(grad_orientation_2 / 45.0) * 45.0  # batch,1,height,width
 
         # THIN EDGES (NON-MAX SUPPRESSION)
 

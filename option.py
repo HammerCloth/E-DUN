@@ -20,17 +20,17 @@ parser.add_argument('--seed', type=int, default=1,  # 随机种子，默认为1
                     help='random seed')
 
 # data 设置
-parser.add_argument('--dir_data', type=str, default='data/',  # 数据集文件夹
+parser.add_argument('--dir_data', type=str, default='./data/',  # 数据集文件夹
                     help='dataset directory')
 parser.add_argument('--dir_demo', type=str, default='../DPDNN',  # demo 图片文件夹
                     help='demo image directory')
-parser.add_argument('--data_train', type=str, default='DIV2K',  # 训练集名称
+parser.add_argument('--data_train', type=str, default='HDT',  # 训练集名称
                     help='train dataset name')
-parser.add_argument('--data_test', type=str, default='Set5',  # 测试数据集名称
+parser.add_argument('--data_test', type=str, default='HDT',  # 测试数据集名称
                     help='test dataset name')
 parser.add_argument('--benchmark_noise', action='store_true',  # 使用噪音较大的基准测试集
                     help='use noisy benchmark sets')
-parser.add_argument('--n_train', type=int, default=800,  # 训练集大小
+parser.add_argument('--n_train', type=int, default=5,  # 训练集大小
                     help='number of training set')
 parser.add_argument('--n_val', type=int, default=0,  # 验证集大小
                     help='number of validation set')
@@ -66,7 +66,7 @@ parser.add_argument('--reset', action='store_true',  # 重置训练
                     help='reset the training')
 parser.add_argument('--test_every', type=int, default=1000,  # 每N个批次进行测试
                     help='do test per every N batches')
-parser.add_argument('--epochs', type=int, default=600,  # number of epochs to train
+parser.add_argument('--epochs', type=int, default=10,  # number of epochs to train
                     help='number of epochs to train')
 parser.add_argument('--batch_size', type=int, default=4 * 3,  # 训练输入batch大小
                     help='input batch size for training')
