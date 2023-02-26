@@ -114,6 +114,7 @@ class Trainer:
                 loss = self.loss(sr, hr)
 
             if loss.item() < self.args.skip_threshold * self.error_last:
+                loss.requires_grad_(True)
                 loss.backward()
                 self.optimizer.step()
             else:
