@@ -118,9 +118,10 @@ class CandyNet(nn.Module):
         width = inidices_positive.size()[3]
         pixel_count = height * width
 
-        pixel_range = torch.FloatTensor([range(pixel_count)])  # batch,pixel_range
         if self.use_cuda:
             pixel_range = torch.cuda.FloatTensor([range(pixel_count)])
+        else:
+            pixel_range = torch.FloatTensor([range(pixel_count)])  # batch,pixel_range
 
         indices = (  # batch,pixel_range
                 inidices_positive.view(

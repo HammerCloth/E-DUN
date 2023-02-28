@@ -75,7 +75,7 @@ class E_DUN(nn.Module):
         self.conv_down = ConvDown(3, self.up_factor)
 
         # candy算子不需要迭代内部系数
-        self.candy = CandyNet(3)
+        self.candy = CandyNet(3, not args.cpu)
         for para in self.candy.parameters():
             para.requires_grad = False
 
