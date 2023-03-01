@@ -71,6 +71,7 @@ class E_DUN(nn.Module):
         # 纹理重构模块
         self.eta = nn.ParameterList([nn.Parameter(torch.tensor(0.5)) for _ in range(T)])
         self.delta = nn.ParameterList([nn.Parameter(torch.tensor(0.1)) for _ in range(T)])
+        self.gama = nn.Parameter(0.1)
         self.conv_up = ConvUp(3, self.up_factor)
         self.conv_down = ConvDown(3, self.up_factor)
 
@@ -120,7 +121,7 @@ class E_DUN(nn.Module):
             x_texture.append(x_texture[i] - self.delta[i] * (
                     self.conv_up(self.conv_down(x) - y) + self.eta[i] * (x - v)))
             # # -----------------------edge module--------------------------
-            x_edge = (self.candy(x))  # 这里对代码进行了置换
+            x_edge = self.gama*(self.candy(x))  # 这里对代码进行了置换
             x = x_edge + x_texture[i + 1]  # 这里可以增加一些倍数，直接相加可能会存在问题
             #
             outs.append(x)
