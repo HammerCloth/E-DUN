@@ -93,8 +93,8 @@ class Trainer:
         self.model.train()
 
         timer_data, timer_model = utility.timer(), utility.timer()
-
-        for batch, (lr, hr, _, idx_scale) in enumerate(self.loader_train):
+        tqdm_train = tqdm(self.loader_train, ncols=80)
+        for batch, (lr, hr, _, idx_scale) in enumerate(tqdm_train):
 
             lr, hr = self.prepare([lr, hr])
 
