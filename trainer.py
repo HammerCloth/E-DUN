@@ -35,7 +35,7 @@ class Trainer:
 
     def test(self):
         epoch = self.scheduler.last_epoch + 2
-        self.ckp.write_log('\nEvaluation:')
+        self.ckp.write_log('Evaluation:')
         self.ckp.add_log(torch.zeros(1, len(self.scale)))
         self.model.eval()
 
@@ -87,7 +87,7 @@ class Trainer:
         lr = self.scheduler.get_lr()[0]
 
         self.ckp.write_log(
-            '[Epoch {}]\tLearning rate: {:.2e}'.format(epoch, Decimal(lr))
+            '\n[Epoch {}]\tLearning rate: {:.2e}'.format(epoch, Decimal(lr))
         )
         self.loss.start_log()
         self.model.train()
