@@ -148,20 +148,12 @@ class CandyNet(nn.Module):
 
         is_max = channel_select_filtered.min(dim=1)[0] > 0.0
 
-        thin_edges = grad_mag.clone()
-        thin_edges[is_max == 0] = 0.0
-
+        grad_mag[is_max == 0] = 0.0
         # THRESHOLD
-
-        thresholded = thin_edges.clone()
-        thresholded[thin_edges < self.threshold] = 0.0
-
-        early_threshold = grad_mag.clone()
-        early_threshold[grad_mag < self.threshold] = 0.0
-
+        grad_mag[grad_mag < self.threshold] = 0.0
         # assert grad_mag.size() == grad_orientation.size() == thin_edges.size() == thresholded.size() == early_threshold.size()
 
-        return thresholded
+        return grad_mag
 
 
 if __name__ == '__main__':
