@@ -40,7 +40,6 @@ class Trainer:
         self.model.eval()
 
         with torch.no_grad():
-
             for idx_scale, scale in enumerate(self.scale):
                 eval_acc = 0
                 self.loader_test.dataset.set_scale(idx_scale)
@@ -93,8 +92,8 @@ class Trainer:
         self.model.train()
 
         timer_data, timer_model = utility.timer(), utility.timer()
-        tqdm_train = tqdm(self.loader_train, ncols=80)
-        for batch, (lr, hr, _, idx_scale) in enumerate(tqdm_train):
+        #tqdm_train = tqdm(self.loader_train, ncols=80)
+        for batch, (lr, hr, _, idx_scale) in enumerate(self.loader_train):
 
             lr, hr = self.prepare([lr, hr])
 
@@ -125,7 +124,7 @@ class Trainer:
             timer_model.hold()
 
             if (batch + 1) * self.args.batch_size % self.args.print_every == 0:
-                self.ckp.write_log('[{}/{}]\t{}\t{:.1f}+{:.1f}s'.format(
+                self.ckp.write_log('==> [{}/{}]\t{}\t{:.1f}+{:.1f}s'.format(
                     (batch + 1) * self.args.batch_size,
                     len(self.loader_train.dataset),
                     self.loss.display_loss(batch),
