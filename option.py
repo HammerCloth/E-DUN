@@ -30,11 +30,11 @@ parser.add_argument('--data_test', type=str, default='HDT',  # 测试数据集�
                     help='test dataset name')
 parser.add_argument('--benchmark_noise', action='store_true',  # 使用噪音较大的基准测试集
                     help='use noisy benchmark sets')
-parser.add_argument('--n_train', type=int, default=5,  # 训练集大小
+parser.add_argument('--n_train', type=int, default=5,  # 训练集大小  n_train*repeat/batch_size = batchs
                     help='number of training set')
 parser.add_argument('--n_val', type=int, default=0,  # 验证集大小
                     help='number of validation set')
-parser.add_argument('--offset_val', type=int, default=0,  # validation index offest
+parser.add_argument('--offset_val', type=int, default=0,  # validation index offest 验证集开始的位置，不能在训练集的index中，否则会出错
                     help='validation index offest')
 parser.add_argument('--ext', type=str, default='img',  # 数据集文件扩展名 默认为img
                     help='dataset file extension')
@@ -68,7 +68,7 @@ parser.add_argument('--test_every', type=int, default=1000,  # 每N个批次进�
                     help='do test per every N batches')
 parser.add_argument('--epochs', type=int, default=10,  # number of epochs to train
                     help='number of epochs to train')
-parser.add_argument('--batch_size', type=int, default=4 * 3,  # 训练输入batch大小
+parser.add_argument('--batch_size', type=int, default=4 * 3,  # 训练输入batch大小  n_train*repeat/batch_size = batchs
                     help='input batch size for training')
 parser.add_argument('--split_batch', type=int, default=1,  # 将批次分成更小的块
                     help='split the batch into smaller chunks')
