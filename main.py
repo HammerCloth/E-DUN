@@ -1,4 +1,4 @@
-import os
+import gc
 
 import torch
 
@@ -12,8 +12,10 @@ from trainer import Trainer
 torch.manual_seed(args.seed)
 checkpoint = utility.checkpoint(args)
 # os.environ['CUDA_VISIBLE_DEVICES'] = '4,2,3,5'
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
+gc.collect()
+torch.cuda.empty_cache()
 if checkpoint.ok:
     loader = mydata.Data(args)
     model = models.Model(args, checkpoint)
