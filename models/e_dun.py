@@ -71,7 +71,7 @@ class E_DUN(nn.Module):
         # 纹理重构模块
         self.eta = nn.ParameterList([nn.Parameter(torch.tensor(0.5)) for _ in range(T)])
         self.delta = nn.ParameterList([nn.Parameter(torch.tensor(0.1)) for _ in range(T)])
-        self.gama = nn.Parameter(torch.tensor(0.1))
+        self.gama = nn.Parameter(torch.tensor(0.01))
         self.conv_up = ConvUp(3, self.up_factor)
         self.conv_down = ConvDown(3, self.up_factor)
 
@@ -89,7 +89,7 @@ class E_DUN(nn.Module):
 
         x_texture.append(torch.nn.functional.interpolate(
             y, scale_factor=self.up_factor, mode='bilinear', align_corners=False))
-        x_edge = self.gama*self.candy(x_texture[0]/x_texture[0].max())
+        x_edge = self.gama*self.candy(x_texture[0]//x_texture[0].max())
         x = (x_edge + x_texture[0])  # 这里可以增加一些倍数，直接相加可能会存在问题
 
         for i in range(len(self.Fe_e)):
@@ -121,7 +121,7 @@ class E_DUN(nn.Module):
             x_texture.append(x_texture[i] - self.delta[i] * (
                     self.conv_up(self.conv_down(x) - y) + self.eta[i] * (x - v)))
             # # -----------------------edge module--------------------------
-            x_edge = self.gama*(self.candy(x/x.max()))  # 这里对代码进行了置换
+            x_edge = self.gama*(self.candy(x//x.max()))  # 这里对代码进行了置换
             x = x_edge + x_texture[i + 1]  # 这里可以增加一些倍数，直接相加可能会存在问题
             #
             outs.append(x)
