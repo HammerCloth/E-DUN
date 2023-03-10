@@ -66,10 +66,10 @@ class Model(nn.Module):
 
     def save(self, apath, epoch, is_best=False):
         target = self.get_model()
-        torch.save(
-            target.state_dict(),
-            os.path.join(apath, 'model', 'model_latest.pt')
-        )
+        #torch.save(
+        #    target.state_dict(),
+        #    os.path.join(apath, 'model', 'model_latest.pt')
+        #)
         if is_best:
             torch.save(
                 target.state_dict(),
